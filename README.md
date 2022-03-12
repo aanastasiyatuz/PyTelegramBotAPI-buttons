@@ -27,7 +27,7 @@ keyboard.add(button1, button2, button3)
 Чтобы указать, после какого сообщения будет отображаться клавиатура, мы к этому сообщению добавляем клавиатуру:
 
 ```py
-bot.send_message(chat_id, 'Сообщение с клавиатурой', reply_markup=keyboard)
+bot.send_message(message.chat.id, 'Сообщение с клавиатурой', reply_markup=keyboard)
 ```
 
 # Кнопки, которые находятся под сообщением
@@ -48,7 +48,7 @@ keyboard.add(button1, button2)
 Чтобы указать, к какому сообщению будет прикреплена клавиатура, мы к этому сообщению добавляем клавиатуру:
 
 ```py
-bot.send_message(chat_id, 'Сообщение с кнопками', reply_markup=keyboard)
+bot.send_message(message.chat.id, 'Сообщение с кнопками', reply_markup=keyboard)
 ```
 
 Чтобы бот знал, что делать после нажатия на эти кнопки мы можем создать еще одну функцию
