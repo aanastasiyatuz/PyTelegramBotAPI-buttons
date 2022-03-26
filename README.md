@@ -1,65 +1,112 @@
 # Кнопки в PyTelegramBotApi
 
-В телеграме есть 2 вида кнопок:
-* которые находятся в клавиатуре
-* которые находятся под сообщением
+Итак у нас есть такой бот:
 
-Чтобы пользоваться кнопками нужно импортировать библеотеку
 ```py
+import telebot
+
+token = 'ваш токен'
+
+bot = telebot.TeleBot(token)
+
+@bot.message_handler(commands=['start', 'hi'])
+def start_message(message):
+    bot.send_message(message.chat.id, "Hello")
+
+@bot.message_handler(content_types=['sticker'])
+def send_sticker(message):
+    bot.send_sticker(message.chat.id, message.sticker.file_id)
+
+bot.polling()
+```
+
+Давайте добавим ему кнопки после того, как мы здороваемся, 
+чтобы он мог либо прислать нам стикер либо попрощаться.
+Чтобы прикрепить к боту кнопки, вам нужно создать клавиатуру и добавить в нее кнопки, 
+после прикрепить к какому-нибудь сообщению.
+Новый код будет писаться в таких разделителях """""", 
+вам эти разделители писать не обязательно, 
+это для того, чтобы вы понимали, какой код мы добавили.
+
+```py
+import telebot
+""""""
 from telebot import types
-```
+""""""
 
-# Кнопки, которые находятся в клавиатуре
+token = 'ваш токен'
 
-Чтобы создать кнопки 1 типа нужно создать клавиатуру и добавить туда кнопки:
+bot = telebot.TeleBot(token)
 
-```py
-# создаем клавиатуру:
-keyboard = types.ReplyKeyboardMarkup(row_width=2)
-# создаем кнопки, в них указываем текст, который в них будет хранится:
-button1 = types.KeyboardButton('a')
-button2 = types.KeyboardButton('b')
-button3 = types.KeyboardButton('c')
-# добавляем кнопки в клавиатуру:
-keyboard.add(button1, button2, button3)
-```
-
-Чтобы указать, после какого сообщения будет отображаться клавиатура, мы к этому сообщению добавляем клавиатуру:
-
-```py
-bot.send_message(message.chat.id, 'Сообщение с клавиатурой', reply_markup=keyboard)
-```
-
-# Кнопки, которые находятся под сообщением
-
-Чтобы создать кнопки 2 типа, мы так же должны создать клавиатуру и добавить туда кнопки:
-
-```py
+""""""
 # создаем клавиатуру
 keyboard = types.InlineKeyboardMarkup()
 # создаем кнопки, в скобочках первое - сообщение внутри кнопки, 
 # второе - текст по которому мы поймем, что именно эта кнопка была нажата (в телеграме этого не будет видно)
-button1 = types.InlineKeyboardButton("Yes", callback_data="cb_yes")
-button2 = types.InlineKeyboardButton("No", callback_data="cb_no")
+button1 = types.InlineKeyboardButton("Прислать стикер", callback_data="yes")
+button2 = types.InlineKeyboardButton("Попрощаться", callback_data="no")
 # добавляем кнопки в клавиатуру
 keyboard.add(button1, button2)
+""""""
+
+@bot.message_handler(commands=['start', 'hi'])
+def start_message(message):
+    bot.send_message(message.chat.id, "Hello")
+    """"""
+    # настройка reply_markup позволяет нам прикрепить клавиатуру к сообщению
+    bot.send_message(message.chat.id, "Что сделать дальше?", reply_markup=keyboard)
+    """"""
+
+@bot.message_handler(content_types=['sticker'])
+def send_sticker(message):
+    bot.send_sticker(message.chat.id, message.sticker.file_id)
+
+bot.polling()
 ```
 
-Чтобы указать, к какому сообщению будет прикреплена клавиатура, мы к этому сообщению добавляем клавиатуру:
+Теперь наш бот после того как мы напишем `\start` или `\hi` будет нам присылать сообщение `Hello`,
+и сообщение `Что сделать дальше?` с кнопками `Прислать стикер` `Попрощаться`.
+Но при нажатии на кнопки, наш бот еще не знает, что делать. 
+Нам нужно написать ему код, реагирующий на эти кнопки.
 
 ```py
-bot.send_message(message.chat.id, 'Сообщение с кнопками', reply_markup=keyboard)
-```
+import telebot
+from telebot import types
 
-Чтобы бот знал, что делать после нажатия на эти кнопки мы можем создать еще одну функцию
+token = 'ваш токен'
 
-```py
+bot = telebot.TeleBot(token)
+
+# создаем клавиатуру
+keyboard = types.InlineKeyboardMarkup()
+# создаем кнопки, в скобочках первое - сообщение внутри кнопки, 
+# второе - текст по которому мы поймем, что именно эта кнопка была нажата (в телеграме этого не будет видно)
+button1 = types.InlineKeyboardButton("Прислать стикер", callback_data="yes")
+button2 = types.InlineKeyboardButton("Попрощаться", callback_data="no")
+# добавляем кнопки в клавиатуру  
+keyboard.add(button1, button2)
+
+@bot.message_handler(commands=['start', 'hi'])
+def start_message(message):
+  bot.send_message(message.chat.id, "Hello")
+  # настройка reply_markup позволяет нам прикрепить клавиатуру к сообщению
+  bot.send_message(message.chat.id, "Что сделать дальше?", reply_markup=keyboard)
+
+""""""
 @bot.callback_query_handler(func=lambda call: True)
 def callback_query(call):
-    # в call.data хранится то сообщение, которое мы указали в кнопках на втором месте
-    if call.data == "cb_yes":
-        # отправляем сообщение обратно в чат
-        bot.answer_callback_query(call.id, "Answer is Yes")
-    elif call.data == "cb_no":
-        bot.answer_callback_query(call.id, "Answer is No")
+  # в call.data хранится то сообщение, которое мы указали в кнопках на втором месте
+  # id вашего чата хранится в call.from_user.id
+  if call.data == "yes":
+    # отправляем стикер в чат
+    bot.send_sticker(call.from_user.id, "CAACAgIAAxkBAAI4dGI-in_cfLBwj4iaDIvR2qhlxWpiAAKpFgACc_QAAUtyCXMIz-lEyiME")
+  elif call.data == "no":
+    bot.send_message(call.from_user.id, "Пока!")
+""""""
+
+@bot.message_handler(content_types=['sticker'])
+def send_sticker(message):
+  bot.send_sticker(message.chat.id, message.sticker.file_id)
+
+bot.polling()
 ```
